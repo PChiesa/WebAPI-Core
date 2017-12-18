@@ -37,6 +37,13 @@ namespace WebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                //app.UseCors((p) =>
+                //{
+                //    p.AllowAnyHeader();
+                //    p.AllowAnyMethod();
+                //    p.AllowAnyOrigin();
+                //});
+
             }
             else
             {

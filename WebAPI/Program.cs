@@ -20,7 +20,8 @@ namespace WebAPI
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseUrls("http://localhost:3000/")
+                .UseIISIntegration()
+                .UseUrls("http://127.0.0.1:55556", "http://localhost:55556/")
                 .Build();
     }
 }

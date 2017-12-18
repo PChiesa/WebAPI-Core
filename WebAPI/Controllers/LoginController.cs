@@ -27,20 +27,32 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> LogUser([FromBody]LoginCredentials credentials)
         {
-            var user = await _dbContext.Users.FirstAsync(x => x.Cpf == credentials.Cpf || x.Email == credentials.Email);
-            user.Password = credentials.Password;
-
-            var authenticatedUser = await _magento.AuthenticateUser(user);
-            if (authenticatedUser == null)
+            try
             {
-                return Unauthorized();
+                var user = await _dbContext.Users.FirstAsync(x => x.Cpf == credentials.Cpf || x.Email == credentials.Email);
+                user.Password = credentials.Password;
+
+                var authenticatedUser = await _magento.AuthenticateUser(user);
+                if (authenticatedUser == null)
+                {
+                    return NoContent();
+                }
+
+                user.Token = authenticatedUser.Token;
+                var loggedUser = _dbContext.Users.Update(user);
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(loggedUser.Entity);
+
             }
-
-            user.Token = authenticatedUser.Token;
-            var loggedUser = _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok(loggedUser.Entity);
+            catch (InvalidOperationException)
+            {
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpGet("{email}")]
@@ -51,7 +63,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterUser([FromBody]User user)
+        public async Task<IActionResult> RegisterUser([FromBody]Models.User user)
         {
             user = await _magento.RegisterUser(user);
             user.Id = 0;

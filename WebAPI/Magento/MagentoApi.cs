@@ -9,7 +9,7 @@ namespace WebAPI.Magento
 {
     public class MagentoApi : IMagentoApi
     {
-        const string API_URL = "http://10.211.55.4/";
+        const string API_URL = "http://localhost:50569/";
 
         public async Task<User> AuthenticateUser(User user)
         {

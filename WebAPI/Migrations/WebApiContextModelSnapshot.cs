@@ -75,6 +75,8 @@ namespace WebAPI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ClientUserId");
+
                     b.Property<string>("Cpf");
 
                     b.Property<string>("Email");
@@ -92,6 +94,10 @@ namespace WebAPI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ClientEventId");
+
+                    b.Property<string>("ClientUserId");
 
                     b.Property<int>("CurrentStatus");
 
@@ -111,6 +117,8 @@ namespace WebAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EventId");
+
                     b.ToTable("Voucher");
                 });
 
@@ -119,6 +127,14 @@ namespace WebAPI.Migrations
                     b.HasOne("WebAPI.Models.Store", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("WebAPI.Models.Voucher", b =>
+                {
+                    b.HasOne("WebAPI.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
