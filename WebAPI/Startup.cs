@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WebAPI.Authorization;
 using WebAPI.Database;
+using WebAPI.Magento;
 
 namespace WebAPI
 {
@@ -24,6 +26,9 @@ namespace WebAPI
         {
             services.AddMvc();
             services.AddDbContext<WebApiContext>();
+            services.AddScoped<StoreAuthorization>();
+            services.AddScoped<UserAuthorization>();
+            services.AddTransient<IMagentoApi, MagentoApi>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

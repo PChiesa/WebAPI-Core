@@ -4,34 +4,40 @@ using System.Collections.Generic;
 
 namespace WebAPI.Migrations
 {
-    public partial class CreatedStoreEventAndVoucher : Migration
+    public partial class Create : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Users",
-                table: "Users");
-
-            migrationBuilder.RenameTable(
-                name: "Users",
-                newName: "User");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_User",
-                table: "User",
-                column: "Id");
-
             migrationBuilder.CreateTable(
                 name: "Store",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true)
+                    ClientStoreId = table.Column<string>(nullable: true),
+                    Hash = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    SecretKey = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Store", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Cpf = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Token = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,10 +46,12 @@ namespace WebAPI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    CurrentStatus = table.Column<int>(nullable: false),
                     Description1 = table.Column<string>(nullable: true),
                     Description2 = table.Column<string>(nullable: true),
                     Description3 = table.Column<string>(nullable: true),
                     EventId = table.Column<int>(nullable: false),
+                    ExpirationDate = table.Column<DateTime>(nullable: false),
                     Token = table.Column<string>(nullable: true),
                     UserId = table.Column<int>(nullable: false)
                 },
@@ -58,6 +66,7 @@ namespace WebAPI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    ClientEventId = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false),
                     Description1 = table.Column<string>(nullable: true),
                     Description2 = table.Column<string>(nullable: true),
@@ -91,23 +100,13 @@ namespace WebAPI.Migrations
                 name: "Event");
 
             migrationBuilder.DropTable(
+                name: "User");
+
+            migrationBuilder.DropTable(
                 name: "Voucher");
 
             migrationBuilder.DropTable(
                 name: "Store");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_User",
-                table: "User");
-
-            migrationBuilder.RenameTable(
-                name: "User",
-                newName: "Users");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Users",
-                table: "Users",
-                column: "Id");
         }
     }
 }

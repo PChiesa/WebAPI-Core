@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebAPI.Authorization;
 using WebAPI.Database;
 using WebAPI.Models;
+using WebAPI.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,40 +24,47 @@ namespace WebAPI.Controllers
             _dbContext = dbContext;
         }
 
+        [ServiceFilter(typeof(UserAuthorization))]
         [HttpGet("{userId}")]
-        public IActionResult GetEvents(int userId)
+        public async Task<IActionResult> GetEvents(int userId)
         {
-            return Ok(new List<Event>
-            {
-                new Event{ Name = "Event1" },
-                new Event{ Name = "Event2" },
-                new Event{ Name = "Event3" },
-                new Event{ Name = "Event4" },
-                new Event{ Name = "Event5" },
-                new Event{ Name = "Event6" },
-                new Event{ Name = "Event7" },
-                new Event{ Name = "Event8" },
-                new Event{ Name = "Event9" },
-                new Event{ Name = "Event10" },
-            });
+            var events = await _dbContext.Vouchers.Where(x => x.UserId == userId && x.Event.Date > DateTime.Now).Select(x => x.Event).ToListAsync();
+
+            return Ok(events);
         }
 
+        [ServiceFilter(typeof(UserAuthorization))]
         [HttpGet("{eventId}/{userId}")]
-        public IActionResult GetVouchers(int eventId, int userId)
+        public async Task<IActionResult> GetVouchers(int eventId, int userId)
         {
-            return Ok(new List<Voucher>
-                {
-                    new Voucher { Id = 1, Token = "1234"},
-                    new Voucher { Id = 2, Token = "1234"},
-                    new Voucher { Id = 3, Token = "1234"},
-                    new Voucher { Id = 4, Token = "1234"},
-                });
+            var vouchers = await _dbContext.Vouchers.Where(x => x.EventId == eventId && x.UserId == userId && x.ExpirationDate > DateTime.Now && x.CurrentStatus == Enums.VoucherStatus.Active).ToListAsync();
+            return Ok(vouchers);
         }
 
+        [ServiceFilter(typeof(StoreAuthorization))]
         [HttpPost]
-        public IActionResult CreateVoucher([FromBody] Voucher voucher)
+        public async Task<IActionResult> CreateVoucher([FromBody] Voucher voucher)
         {
-            return Ok();
+            try
+            {
+                var user = await _dbContext.Users.FirstAsync(x => x.ClientUserId == voucher.ClientUserId);
+                var ev = await _dbContext.Events.FirstAsync(x => x.ClientEventId == voucher.ClientEventId);
+
+                voucher.UserId = user.Id;
+                voucher.EventId = ev.Id;
+                voucher.CurrentStatus = Enums.VoucherStatus.Active;
+                voucher.Token = new SecureRandomString().Generate(8);
+                voucher.Id = 0;
+
+                await _dbContext.Vouchers.AddAsync(voucher);
+
+                return Ok();
+
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

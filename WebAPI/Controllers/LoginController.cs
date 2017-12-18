@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebAPI.Database;
+using WebAPI.Magento;
 using WebAPI.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -15,17 +17,30 @@ namespace WebAPI.Controllers
     public class LoginController : Controller
     {
         private readonly WebApiContext _dbContext;
-        public LoginController(WebApiContext dbContext)
+        private readonly IMagentoApi _magento;
+        public LoginController(WebApiContext dbContext, IMagentoApi magento)
         {
             _dbContext = dbContext;
+            _magento = magento;
         }
 
         [HttpPost]
-        public IActionResult LogUser([FromBody]LoginCredentials credentials)
+        public async Task<IActionResult> LogUser([FromBody]LoginCredentials credentials)
         {
-            //Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            //return null;
-            return Ok(new User { Id = 1, Cpf = credentials.Cpf, Email = credentials.Email, Password = credentials.Password });
+            var user = await _dbContext.Users.FirstAsync(x => x.Cpf == credentials.Cpf || x.Email == credentials.Email);
+            user.Password = credentials.Password;
+
+            var authenticatedUser = await _magento.AuthenticateUser(user);
+            if (authenticatedUser == null)
+            {
+                return Unauthorized();
+            }
+
+            user.Token = authenticatedUser.Token;
+            var loggedUser = _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(loggedUser.Entity);
         }
 
         [HttpGet("{email}")]
@@ -36,10 +51,15 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterUser([FromBody]User user)
+        public async Task<IActionResult> RegisterUser([FromBody]User user)
         {
-            user.Token = Guid.NewGuid().ToString("N");
-            return Ok(user);
+            user = await _magento.RegisterUser(user);
+            user.Id = 0;
+
+            var newUser = await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(newUser.Entity);
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 using WebAPI.Database;
+using WebAPI.Enums;
 
 namespace WebAPI.Migrations
 {
@@ -23,6 +24,8 @@ namespace WebAPI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ClientEventId");
 
                     b.Property<DateTime>("Date");
 
@@ -54,7 +57,13 @@ namespace WebAPI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ClientStoreId");
+
+                    b.Property<string>("Hash");
+
                     b.Property<string>("Name");
+
+                    b.Property<string>("SecretKey");
 
                     b.HasKey("Id");
 
@@ -84,6 +93,8 @@ namespace WebAPI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<int>("CurrentStatus");
+
                     b.Property<string>("Description1");
 
                     b.Property<string>("Description2");
@@ -91,6 +102,8 @@ namespace WebAPI.Migrations
                     b.Property<string>("Description3");
 
                     b.Property<int>("EventId");
+
+                    b.Property<DateTime>("ExpirationDate");
 
                     b.Property<string>("Token");
 
