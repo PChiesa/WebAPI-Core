@@ -74,7 +74,7 @@ namespace WebAPI.Controllers
 
             user.Id = 0;
 
-            var newUser = await _dbContext.Users.AddAsync(user);
+            var newUser = _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
             return Ok(newUser.Entity);
