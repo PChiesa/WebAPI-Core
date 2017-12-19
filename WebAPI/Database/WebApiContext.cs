@@ -13,7 +13,8 @@ namespace WebAPI.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=app.db");
+            //optionsBuilder.UseSqlite("Data Source=app.db");
+            optionsBuilder.UseSqlServer("Data Source=voucherseguro.database.windows.net;Initial Catalog=vsdbprd;User ID=vsadmin;Password=7nCBeABV;");
         }
 
 

@@ -15,7 +15,7 @@ namespace WebAPI.Magento
         {
             using (var client = new HttpClient())
             {
-                var response = await client.PostAsync(API_URL + "api/Magento/IsUserAuthenticated", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                var response = await client.PostAsync(API_URL + "api/Magento/AuthenticateUser", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
 
                 return JsonConvert.DeserializeObject<User>(await response.Content.ReadAsStringAsync());
             }

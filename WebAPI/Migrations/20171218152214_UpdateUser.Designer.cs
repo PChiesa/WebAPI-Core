@@ -12,9 +12,10 @@ using WebAPI.Enums;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(WebApiContext))]
-    partial class WebApiContextModelSnapshot : ModelSnapshot
+    [Migration("20171218152214_UpdateUser")]
+    partial class UpdateUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,15 +96,7 @@ namespace WebAPI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("ClientCPFOwner");
-
                     b.Property<string>("ClientEventId");
-
-                    b.Property<string>("ClientNameOwner");
-
-                    b.Property<string>("ClientOrderId");
-
-                    b.Property<string>("ClientTicketId");
 
                     b.Property<string>("ClientUserId");
 

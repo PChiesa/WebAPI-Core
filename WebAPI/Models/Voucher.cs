@@ -8,12 +8,13 @@ namespace WebAPI.Models
     [Table("Voucher")]
     public class Voucher
     {
-        //TODO: Add ClientCPFOwner CPF of voucher owner, name of voucher owner, ClientOrderId, ClientTicketId
-
-
         [Key]
         public int Id { get; set; }
         public int EventId { get; set; }
+        public string ClientCPFOwner { get; set; }
+        public string ClientNameOwner { get; set; }
+        public string ClientOrderId { get; set; }
+        public string ClientTicketId { get; set; }
         public string ClientEventId { get; set; }
         public int UserId { get; set; }
         public string ClientUserId { get; set; }

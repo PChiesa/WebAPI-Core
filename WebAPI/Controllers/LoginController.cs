@@ -33,7 +33,7 @@ namespace WebAPI.Controllers
                 user.Password = credentials.Password;
 
                 var authenticatedUser = await _magento.AuthenticateUser(user);
-                if (authenticatedUser == null)
+                if (authenticatedUser.Token == null)
                 {
                     return NoContent();
                 }
@@ -66,6 +66,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> RegisterUser([FromBody]Models.User user)
         {
             user = await _magento.RegisterUser(user);
+
+            if (string.IsNullOrEmpty(user.Token))
+            {
+                return NotFound(user.Name);
+            }
+
             user.Id = 0;
 
             var newUser = await _dbContext.Users.AddAsync(user);
