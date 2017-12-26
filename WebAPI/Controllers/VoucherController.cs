@@ -50,13 +50,14 @@ namespace WebAPI.Controllers
                 var user = await _dbContext.Users.FirstAsync(x => x.ClientUserId == voucher.ClientUserId);
                 var ev = await _dbContext.Events.FirstAsync(x => x.ClientEventId == voucher.ClientEventId);
 
-                voucher.UserId = user.Id;
                 voucher.EventId = ev.Id;
                 voucher.CurrentStatus = Enums.VoucherStatus.Active;
                 voucher.Token = new SecureRandomString().Generate(8);
                 voucher.Id = 0;
+                voucher.UserId = user.Id;
 
                 await _dbContext.Vouchers.AddAsync(voucher);
+                await _dbContext.SaveChangesAsync();
 
                 return Ok();
 
