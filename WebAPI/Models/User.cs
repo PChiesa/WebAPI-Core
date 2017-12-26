@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebAPI.Models
 {
-    [Table("User")]
+    [Table("Users")]
     public class User
     {
         public User()
@@ -12,6 +12,7 @@ namespace WebAPI.Models
         }
 
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string ClientUserId { get; set; }
         public string Name { get; set; }

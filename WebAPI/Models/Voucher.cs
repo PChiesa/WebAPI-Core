@@ -5,10 +5,11 @@ using WebAPI.Enums;
 
 namespace WebAPI.Models
 {
-    [Table("Voucher")]
+    [Table("Vouchers")]
     public class Voucher
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public int EventId { get; set; }
         public string ClientCPFOwner { get; set; }
