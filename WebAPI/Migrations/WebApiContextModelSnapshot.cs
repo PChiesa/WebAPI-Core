@@ -18,7 +18,8 @@ namespace WebAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.0.1-rtm-125");
+                .HasAnnotation("ProductVersion", "2.0.1-rtm-125")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("WebAPI.Models.Event", b =>
                 {
@@ -49,7 +50,7 @@ namespace WebAPI.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Event");
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("WebAPI.Models.Store", b =>
@@ -67,7 +68,7 @@ namespace WebAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Store");
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("WebAPI.Models.User", b =>
@@ -81,13 +82,15 @@ namespace WebAPI.Migrations
 
                     b.Property<string>("Email");
 
+                    b.Property<string>("LastName");
+
                     b.Property<string>("Name");
 
                     b.Property<string>("Token");
 
                     b.HasKey("Id");
 
-                    b.ToTable("User");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("WebAPI.Models.Voucher", b =>
@@ -127,7 +130,7 @@ namespace WebAPI.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Voucher");
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("WebAPI.Models.Event", b =>

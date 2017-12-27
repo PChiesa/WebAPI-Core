@@ -9,6 +9,7 @@ using WebAPI.Authorization;
 using WebAPI.Database;
 using WebAPI.Models;
 using WebAPI.Services;
+using WebAPI.Magento;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,10 +19,12 @@ namespace WebAPI.Controllers
     public class VoucherController : Controller
     {
         private readonly WebApiContext _dbContext;
+        private readonly IMagentoApi _magentoApi;
 
-        public VoucherController(WebApiContext dbContext)
+        public VoucherController(WebApiContext dbContext, IMagentoApi magentoApi)
         {
             _dbContext = dbContext;
+            _magentoApi = magentoApi;
         }
 
         [ServiceFilter(typeof(UserAuthorization))]
@@ -47,14 +50,27 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var user = await _dbContext.Users.FirstAsync(x => x.ClientUserId == voucher.ClientUserId);
+                var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ClientUserId == voucher.ClientUserId);
+                int userId = 0;
+                if (user == null)
+                {
+                    user = await _magentoApi.GetUserInfo(int.Parse(voucher.ClientUserId));
+                    if (user == null)
+                        throw new InvalidOperationException();
+
+                    var newUser = await _dbContext.Users.AddAsync(user);
+                    await _dbContext.SaveChangesAsync();
+
+                    userId = newUser.Entity.Id;
+                }
+
                 var ev = await _dbContext.Events.FirstAsync(x => x.ClientEventId == voucher.ClientEventId);
 
                 voucher.EventId = ev.Id;
                 voucher.CurrentStatus = Enums.VoucherStatus.Active;
                 voucher.Token = new SecureRandomString().Generate(8);
                 voucher.Id = 0;
-                voucher.UserId = user.Id;
+                voucher.UserId = userId;
 
                 await _dbContext.Vouchers.AddAsync(voucher);
                 await _dbContext.SaveChangesAsync();

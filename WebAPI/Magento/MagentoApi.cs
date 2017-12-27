@@ -21,6 +21,18 @@ namespace WebAPI.Magento
             }
         }
 
+        public async Task<User> GetUserInfo(int id)
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(API_URL + $"api/Magento/GetUserInfo/{id}");
+                if (response.IsSuccessStatusCode)
+                    return JsonConvert.DeserializeObject<User>(await response.Content.ReadAsStringAsync());
+                else
+                    return null;
+            }
+        }
+
         public async Task<User> RegisterUser(User user)
         {
             using (var client = new HttpClient())

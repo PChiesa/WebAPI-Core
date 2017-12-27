@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using WebAPI.Database;
 using WebAPI.Magento;
 using WebAPI.Models;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -27,27 +28,36 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> LogUser([FromBody]LoginCredentials credentials)
         {
+            EntityEntry<User> loggedUser;
+
             try
             {
-                var user = await _dbContext.Users.FirstAsync(x => x.Cpf == credentials.Cpf || x.Email == credentials.Email);
-                user.Password = credentials.Password;
 
-                var authenticatedUser = await _magento.AuthenticateUser(user);
+                var authenticatedUser = await _magento.AuthenticateUser(new Models.User { Email = credentials.Email, Password = credentials.Password });
                 if (authenticatedUser.Token == null)
                 {
                     return NoContent();
                 }
 
-                user.Token = authenticatedUser.Token;
-                var loggedUser = _dbContext.Users.Update(user);
+                var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == credentials.Email);
+                if (user == null)
+                    loggedUser = await _dbContext.Users.AddAsync(authenticatedUser);
+                else
+                {
+
+                    user.Name = authenticatedUser.Name;
+                    user.LastName = authenticatedUser.LastName;
+                    user.Token = authenticatedUser.Token;
+                    user.Cpf = authenticatedUser.Cpf;
+                    user.Email = authenticatedUser.Email;
+
+                    loggedUser = _dbContext.Users.Update(user);
+                }
+
                 await _dbContext.SaveChangesAsync();
 
                 return Ok(loggedUser.Entity);
 
-            }
-            catch (InvalidOperationException)
-            {
-                return NoContent();
             }
             catch (Exception)
             {

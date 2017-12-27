@@ -5,7 +5,6 @@ using WebAPI.Enums;
 
 namespace WebAPI.Models
 {
-    [Table("Vouchers")]
     public class Voucher
     {
         [Key]

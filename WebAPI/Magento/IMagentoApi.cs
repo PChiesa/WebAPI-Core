@@ -8,5 +8,6 @@ namespace WebAPI.Magento
     {
         Task<User> RegisterUser(User user);
         Task<User> AuthenticateUser(User user);
+        Task<User> GetUserInfo(int id);
     }
 }
