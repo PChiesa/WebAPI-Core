@@ -27,6 +27,29 @@ namespace WebAPI.Controllers
             _magentoApi = magentoApi;
         }
 
+        [ServiceFilter(typeof(StoreAuthorization))]
+        [HttpGet("{clientEventId}/{lastVoucherId}")]
+        public async Task<IActionResult> GetVouchersForLocal(string clientEventId, int lastVoucherId)
+        {
+            try
+            {
+                var vouchers = await _dbContext.Vouchers
+                    .OrderBy(x => x.Id)
+                    .Where(x => x.ClientEventId == clientEventId && x.Id > lastVoucherId)
+                    .ToListAsync();
+
+                if (!vouchers.Any())
+                    return NoContent();
+
+                return Ok(vouchers);
+
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
         [ServiceFilter(typeof(UserAuthorization))]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetEvents(int userId)
@@ -81,6 +104,76 @@ namespace WebAPI.Controllers
             catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ServiceFilter(typeof(StoreAuthorization))]
+        [HttpPost]
+        public async Task<IActionResult> CreateVoucherList([FromBody] Voucher[] voucher)
+        {
+            List<Voucher> failedVouchers = new List<Voucher>();
+            int length = voucher.Count();
+
+            try
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+                    {
+                        var currentVoucher = voucher[i];
+
+                        try
+                        {
+                            /*
+                             Check if the user of the voucher already exists in the voucher seguro API database
+                             */
+                            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ClientUserId == currentVoucher.ClientUserId);
+                            int? userId = user?.Id;
+                            if (user == null)
+                            {
+                                /*
+                                 If the user doesn't exists create a new user with the data from the voucher to allow the user to login on the mobile APP
+                                 */
+
+                                var newUser = await _dbContext.Users.AddAsync(
+                                    new Models.User
+                                    {
+                                        ClientUserId = currentVoucher.ClientUserId,
+                                        Cpf = currentVoucher.ClientUserCpf,
+                                        Email = currentVoucher.ClientUserEmail
+                                    });
+
+                                await _dbContext.SaveChangesAsync();
+
+                                userId = newUser.Entity.Id;
+                            }
+
+                            var ev = await _dbContext.Events.FirstAsync(x => x.ClientEventId == currentVoucher.ClientEventId);
+
+                            /*Updating the voucher with the event and user data*/
+                            currentVoucher.EventId = ev.Id;
+                            currentVoucher.CurrentStatus = Enums.VoucherStatus.Active;
+                            currentVoucher.Token = new SecureRandomString().Generate(8);
+                            currentVoucher.Id = 0;
+                            currentVoucher.UserId = (int)userId;
+
+                            await _dbContext.Vouchers.AddAsync(currentVoucher);
+                            await _dbContext.SaveChangesAsync();
+
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            failedVouchers.Add(currentVoucher);
+                        }
+                    }/*<-- using*/
+                }/*<-- for*/
+                return Ok(failedVouchers);
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
             }
         }
     }

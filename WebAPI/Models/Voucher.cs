@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,7 +26,14 @@ namespace WebAPI.Models
         public DateTime ExpirationDate { get; set; }
         public VoucherStatus CurrentStatus { get; set; }
 
+        [JsonIgnore]
         [ForeignKey("EventId")]
         public Event Event { get; set; }
+
+        [NotMapped]
+        public string ClientUserEmail { get; set; }
+
+        [NotMapped]
+        public string ClientUserCpf { get; set; }
     }
 }
