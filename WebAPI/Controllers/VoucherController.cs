@@ -10,6 +10,7 @@ using WebAPI.Database;
 using WebAPI.Models;
 using WebAPI.Services;
 using WebAPI.Magento;
+using WebAPI.Enums;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,6 +26,30 @@ namespace WebAPI.Controllers
         {
             _dbContext = dbContext;
             _magentoApi = magentoApi;
+        }
+
+
+        [ServiceFilter(typeof(StoreAuthorization))]
+        [HttpGet("{voucherId}/{voucherStatus}")]
+        public async Task<IActionResult> UpdateVoucherStatus(int voucherId, VoucherStatus voucherStatus)
+        {
+            try
+            {
+                var voucher = await _dbContext.Vouchers.FirstAsync(x => x.Id == voucherId);
+                voucher.CurrentStatus = voucherStatus;
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+
+            }
+            catch (InvalidOperationException)
+            {
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
+            }
         }
 
         [ServiceFilter(typeof(StoreAuthorization))]
@@ -54,7 +79,7 @@ namespace WebAPI.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetEvents(int userId)
         {
-            var events = await _dbContext.Vouchers.Where(x => x.UserId == userId && x.Event.Date > DateTime.Now).Select(x => x.Event).ToListAsync();
+            var events = await _dbContext.Vouchers.Where(x => x.UserId == userId && x.Event.Date > DateTime.Now).GroupBy(x => x.Event).Select(x => x.Key).ToListAsync();
 
             return Ok(events);
         }
