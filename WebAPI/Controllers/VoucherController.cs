@@ -79,7 +79,20 @@ namespace WebAPI.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetEvents(int userId)
         {
-            var events = await _dbContext.Vouchers.Where(x => x.UserId == userId && x.Event.Date > DateTime.Now).GroupBy(x => x.Event).Select(x => x.Key).ToListAsync();
+
+            var events = await _dbContext.Vouchers
+                .Where(x => x.UserId == userId && x.Event.Date > DateTime.Now)
+                .GroupBy(x => x.Event)
+                .Select(x => x.Key)
+                .ToListAsync();
+
+
+            events.ForEach(x =>
+            {
+                var store = _dbContext.Stores.Find(x.StoreId);
+
+                x.Store = new Store { Id = store.Id, Name = store.Name };
+            });
 
             return Ok(events);
         }
