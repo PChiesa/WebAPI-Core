@@ -12,9 +12,10 @@ using WebAPI.Enums;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(WebApiContext))]
-    partial class WebApiContextModelSnapshot : ModelSnapshot
+    [Migration("20180105160300_VoucherFinishedDate")]
+    partial class VoucherFinishedDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

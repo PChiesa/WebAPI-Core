@@ -31,11 +31,14 @@ namespace WebAPI.Controllers
 
         [ServiceFilter(typeof(StoreAuthorization))]
         [HttpGet("{voucherId}/{voucherStatus}")]
-        public async Task<IActionResult> UpdateVoucherStatus(int voucherId, VoucherStatus voucherStatus)
+        public async Task<IActionResult> UpdateVoucherStatus(int voucherId, VoucherStatus voucherStatus, [FromQuery] string gate, [FromQuery] DateTime entryDate)
         {
             try
             {
                 var voucher = await _dbContext.Vouchers.FirstAsync(x => x.Id == voucherId);
+
+                voucher.Gate = gate;
+                voucher.EntryDate = entryDate;
                 voucher.CurrentStatus = voucherStatus;
                 await _dbContext.SaveChangesAsync();
 
@@ -101,7 +104,7 @@ namespace WebAPI.Controllers
         [HttpGet("{eventId}/{userId}")]
         public async Task<IActionResult> GetVouchers(int eventId, int userId)
         {
-            var vouchers = await _dbContext.Vouchers.Where(x => x.EventId == eventId && x.UserId == userId && x.ExpirationDate > DateTime.Now && x.CurrentStatus == Enums.VoucherStatus.Active).ToListAsync();
+            var vouchers = await _dbContext.Vouchers.Where(x => x.EventId == eventId && x.UserId == userId && x.FinishedDate >= DateTime.Now).ToListAsync();
             return Ok(vouchers);
         }
 

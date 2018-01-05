@@ -23,7 +23,11 @@ namespace WebAPI.Models
         public string Description2 { get; set; }
         public string Description3 { get; set; }
         public string Token { get; set; }
+        public string Gate { get; set; }
+        public DateTime? EntryDate { get; set; }
+        public DateTime ActivationDate { get; set; }
         public DateTime ExpirationDate { get; set; }
+        public DateTime FinishedDate { get; set; }
         public VoucherStatus CurrentStatus { get; set; }
 
         [JsonIgnore]

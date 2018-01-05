@@ -10,6 +10,7 @@ namespace WebAPI.Magento
     public class MagentoApi : IMagentoApi
     {
         const string API_URL = "https://vsmagentoapi.azurewebsites.net/";
+        //const string API_URL = "http://localhost:50569/";
 
         public async Task<User> AuthenticateUser(User user)
         {
