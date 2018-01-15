@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebAPI.Models
-{   
+{
     public class Event
     {
         [Key]
@@ -22,5 +23,7 @@ namespace WebAPI.Models
 
         [ForeignKey("StoreId")]
         public Store Store { get; set; }
+
+        public ICollection<Voucher> Vouchers { get; set; }
     }
 }

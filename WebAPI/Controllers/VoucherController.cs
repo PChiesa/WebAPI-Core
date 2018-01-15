@@ -28,6 +28,34 @@ namespace WebAPI.Controllers
             _magentoApi = magentoApi;
         }
 
+        [ServiceFilter(typeof(UserAuthorization))]
+        [HttpPost]
+        public async Task<IActionResult> RefreshVouchers([FromBody]IEnumerable<int> voucherIds)
+        {
+            if (voucherIds == null)
+            {
+                return BadRequest();
+            }
+
+            if (!voucherIds.Any())
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var vouchers = await _dbContext.Vouchers
+                    .Where(x => voucherIds.Contains(x.Id))
+                    .Select(x => new VoucherQuickUpdate { Id = x.Id, CurrentStatus = x.CurrentStatus, EntryDate = x.EntryDate, Gate = x.Gate })
+                    .ToListAsync();
+
+                return Ok(vouchers);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
 
         [ServiceFilter(typeof(StoreAuthorization))]
         [HttpGet("{voucherId}/{voucherStatus}")]
@@ -84,7 +112,7 @@ namespace WebAPI.Controllers
         {
 
             var events = await _dbContext.Vouchers
-                .Where(x => x.UserId == userId && x.Event.Date > DateTime.Now)
+                .Where(x => x.UserId == userId && x.Event.Date > DateTime.Now && x.FinishedDate > DateTime.Now)
                 .GroupBy(x => x.Event)
                 .Select(x => x.Key)
                 .ToListAsync();
@@ -93,6 +121,8 @@ namespace WebAPI.Controllers
             events.ForEach(x =>
             {
                 var store = _dbContext.Stores.Find(x.StoreId);
+                var vouchers = _dbContext.Vouchers.Where(v => v.UserId == userId && v.EventId == x.Id && v.FinishedDate > DateTime.Now).ToList();
+                x.Vouchers = vouchers;
 
                 x.Store = new Store { Id = store.Id, Name = store.Name };
             });
