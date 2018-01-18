@@ -9,6 +9,7 @@ using WebAPI.Database;
 using WebAPI.Magento;
 using WebAPI.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using WebAPI.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,6 +26,7 @@ namespace WebAPI.Controllers
             _magento = magento;
         }
 
+        [ServiceFilter(typeof(AppVersionAuthorization))]
         [HttpPost]
         public async Task<IActionResult> LogUser([FromBody]LoginCredentials credentials)
         {

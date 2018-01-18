@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WebAPI.Authorization;
 using WebAPI.Database;
 using WebAPI.Magento;
+using WebAPI.Services;
 
 namespace WebAPI
 {
@@ -28,6 +25,8 @@ namespace WebAPI
             services.AddDbContext<WebApiContext>();
             services.AddScoped<StoreAuthorization>();
             services.AddScoped<UserAuthorization>();
+            services.AddScoped<AppVersionAuthorization>();
+            services.AddSingleton<AppSettings>((s) => Configuration.GetSection("App").Get<AppSettings>());
             services.AddTransient<IMagentoApi, MagentoApi>();
         }
 
